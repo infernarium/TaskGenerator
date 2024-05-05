@@ -9,9 +9,13 @@ def GenerateLatex(save_path: str = "Транспортные задачи", hlin
     
     with doc.create(Section('Транспортные задачи', label=False, numbering=False)):
         doc.append("Цель задачи - составление оптимального плана перевозок из пунктов доставки в пункты выдачи.")
-        doc.append(LineBreak())
+        doc.append(Command("\\"))
         doc.append("Этапы решения: построение начального опорного плана, расчёт потенциалов, расчёт матриц, проверка оптимальности.")
-        doc.append(LineBreak())
+        doc.append(Command("\\"))
+        
+        if hlines:
+            doc.append(Command('noindent'))
+            doc.append(Command('rule{\\linewidth}{0.4pt}'))
         
         for i in range(5):
             with doc.create(Subsection(f'Вариант {i}', label=False, numbering=False)):
