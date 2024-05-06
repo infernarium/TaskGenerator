@@ -1,9 +1,10 @@
+import random
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, \
-    QTableWidget, QTableWidgetItem, QLabel, QLineEdit, QMessageBox
+    QTableWidget, QTableWidgetItem, QLabel, QLineEdit, QMessageBox, QSpinBox, QHBoxLayout
 from PyQt6.QtCore import Qt
 from random import randint
-from scipy.optimize import linprog
+# from scipy.optimize import linprog
 
 class ResultWindow(QWidget):
     def __init__(self, result):
@@ -19,6 +20,102 @@ class ResultWindow(QWidget):
         self.setLayout(layout)
 
 
+class TSPGenerator(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Генератор задачи коммивояжера")
+        self.setGeometry(150, 150, 400, 300)
+        self.init_ui()
+
+    def init_ui(self):
+        self.layout = QVBoxLayout()
+
+        self.city_count_label = QLabel("Количество городов:")
+        self.city_count_spinbox = QSpinBox()
+        self.city_count_spinbox.setMinimum(3)
+        self.city_count_spinbox.setMaximum(100)
+        self.city_count_spinbox.setValue(5)
+
+        self.create_table_button = QPushButton("Создать таблицу")
+        self.create_table_button.clicked.connect(self.create_table)
+
+        self.solve_button = QPushButton("Решить задачу")
+        self.solve_button.clicked.connect(self.solve_tsp)
+
+        controls_layout = QHBoxLayout()
+        controls_layout.addWidget(self.city_count_label)
+        controls_layout.addWidget(self.city_count_spinbox)
+        controls_layout.addWidget(self.create_table_button)
+        controls_layout.addWidget(self.solve_button)
+
+        self.layout.addLayout(controls_layout)
+
+        self.setLayout(self.layout)
+
+    def create_table(self):
+        city_count = self.city_count_spinbox.value()
+
+        # Создание случайной симметричной матрицы расстояний
+        self.distance_matrix = [
+            [0 if i == j else random.randint(10, 100) for j in range(city_count)]
+            for i in range(city_count)
+        ]
+
+        for i in range(city_count):
+            for j in range(i + 1, city_count):
+                self.distance_matrix[i][j] = self.distance_matrix[j][i]
+
+        # Создание таблицы для отображения расстояний
+        if hasattr(self, 'table'):
+            self.layout.removeWidget(self.table)
+            self.table.deleteLater()
+
+        self.table = QTableWidget(city_count, city_count)
+        self.table.setHorizontalHeaderLabels([f"Город {i + 1}" for i in range(city_count)])
+        self.table.setVerticalHeaderLabels([f"Город {i + 1}" for i in range(city_count)])
+
+        for i in range(city_count):
+            for j in range(city_count):
+                item = QTableWidgetItem(str(self.distance_matrix[i][j]))
+                self.table.setItem(i, j, item)
+
+        self.layout.addWidget(self.table)
+
+    def solve_tsp(self):
+        if not hasattr(self, 'distance_matrix'):
+            QMessageBox.warning(
+                self, "Ошибка", "Сначала создайте таблицу"
+            )
+            return
+
+        city_count = len(self.distance_matrix)
+
+        # Жадный алгоритм ближайшего соседа
+        unvisited = set(range(city_count))
+        current_city = 0
+        path = [current_city]
+        unvisited.remove(current_city)
+
+        while unvisited:
+            next_city = min(
+                unvisited,
+                key=lambda x: self.distance_matrix[current_city][x]
+            )
+            path.append(next_city)
+            unvisited.remove(next_city)
+            current_city = next_city
+
+        path.append(path[0])  # Возвращаемся к начальному городу
+
+        # Преобразование пути в строку
+        path_str = " -> ".join([f"Город {x + 1}" for x in path])
+
+        # Отображение полного маршрута в одном окне без деталей
+        result_box = QMessageBox()
+        result_box.setWindowTitle("Решение задачи коммивояжера")
+        result_box.setText(f"Оптимальный путь: {path_str}")
+        result_box.setIcon(QMessageBox.Icon.Information)
+        result_box.exec()
 
 class TransportProblemGenerator(QWidget):
     def __init__(self):
@@ -142,27 +239,63 @@ class OptimizationTaskGenerator(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Генератор задач")
-        self.setGeometry(100, 100, 400, 300)  # Установка размера окна
+        self.setGeometry(100, 100, 800, 600)  # Установка размера окна
         self.init_ui()
         self.task_windows = []
 
     def init_ui(self):
         layout = QVBoxLayout()
-        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Выравнивание по центру
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        # Создание кнопок для различных видов задач
+        # Кнопка для транспортной задачи
         btn_transport_problem = QPushButton("Транспортная задача")
-        btn_transport_problem.setFixedSize(200, 50)  # Установка размеров кнопки
+        btn_transport_problem.setFixedSize(300, 50)
         btn_transport_problem.clicked.connect(self.open_transport_problem_window)
         layout.addWidget(btn_transport_problem)
+
+        # Кнопка для задачи коммивояжера
+        btn_tsp = QPushButton("Задача коммивояжера")
+        btn_tsp.setFixedSize(300, 50)
+        btn_tsp.clicked.connect(self.open_tsp_window)
+        layout.addWidget(btn_tsp)
+
+        # Кнопка для задачи о рюкзаке
+        btn_knapsack = QPushButton("Задача о рюкзаке")
+        btn_knapsack.setFixedSize(300, 50)
+        btn_knapsack.clicked.connect(self.open_knapsack_window)
+        layout.addWidget(btn_knapsack)
+
+        # Кнопка для задачи о линейном программировании
+        btn_linear_programming = QPushButton("Задача о линейном программировании")
+        btn_linear_programming.setFixedSize(300, 50)
+        btn_linear_programming.clicked.connect(self.open_linear_programming_window)
+        layout.addWidget(btn_linear_programming)
 
         self.setLayout(layout)
 
     def open_transport_problem_window(self):
+        # Предполагаем, что у вас есть класс TransportProblemGenerator
         transport_problem_window = TransportProblemGenerator()
         transport_problem_window.show()
         self.task_windows.append(transport_problem_window)
 
+    def open_tsp_window(self):
+        # Предполагаем, что у вас есть класс TSPGenerator
+        tsp_window = TSPGenerator()
+        tsp_window.show()
+        self.task_windows.append(tsp_window)
+
+    def open_knapsack_window(self):
+        # Здесь можно открыть окно или выполнить задачу о рюкзаке
+        knapsack_window = KnapsackProblemGenerator()  # Предположим, что у вас есть такой класс
+        knapsack_window.show()
+        self.task_windows.append(knapsack_window)
+
+    def open_linear_programming_window(self):
+        # Здесь можно открыть окно или выполнить задачу о линейном программировании
+        linear_programming_window = LinearProgrammingGenerator()  # Если у вас есть такой класс
+        linear_programming_window.show()
+        self.task_windows.append(linear_programming_window)
 
 def main():
     app = QApplication(sys.argv)
