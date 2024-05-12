@@ -1,5 +1,6 @@
 import sys
 from os.path import exists
+from LatexExport import GenerateLatex
 from PyQt6.QtWidgets import (
     QApplication,
     QWidget,
@@ -23,12 +24,21 @@ class PseudoBoolWindow(QWidget):
     def initUI(self):
         layout = QVBoxLayout()
 
-        self.number_label = QLabel("Количество булевых переменных", self)
-        layout.addWidget(self.number_label)
+        self.variants_label = QLabel("Количество вариантов", self)
+        variants_layout = QHBoxLayout()
+        variants_layout.addWidget(self.variants_label)
+        self.variants_input = QSpinBox(self)
+        self.variants_input.setRange(1, 50)
+        variants_layout.addWidget(self.variants_input)
+        layout.addLayout(variants_layout)
 
+        self.number_label = QLabel("Количество булевых переменных", self)
+        parametrs_layout = QHBoxLayout()
+        parametrs_layout.addWidget(self.number_label)
         self.number_input = QSpinBox(self)
         self.number_input.setRange(2, 20)
-        layout.addWidget(self.number_input)
+        parametrs_layout.addWidget(self.number_input)
+        layout.addLayout(parametrs_layout)
 
         self.folder_path_text = QLineEdit(self)
         self.folder_path_text.setPlaceholderText(
@@ -68,7 +78,16 @@ class PseudoBoolWindow(QWidget):
             QErrorMessage(self).showMessage("Путь к папке указан не верно")
             return
 
-        # сюда вставить функцию создания латеха
+        questions = [str(i) for i in range(self.variants_input.value() + 1)]
+        # Вставить код создания задач
+        GenerateLatex(save_path=self.folder_path_text.text(),
+                      use_answers=self.anwers_checkbox.isChecked(),
+                      variants_count=self.variants_input.value(),
+                      student_mark=self.student_mark_checkbox.isChecked(),
+                      description=self.description_checkbox.isChecked(),
+                      # Заменить на реальные вопросы и ответы
+                      questions=questions,
+                      answers=questions)
 
 
 if __name__ == "__main__":

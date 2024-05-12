@@ -3,10 +3,11 @@ import subprocess
 from os import unlink
 
 
-def GenerateLatex(questions=["", ""],
+def GenerateLatex(save_path: str,
+                  variants_count: int = 2,
+                  questions=["niger", "niger"],
                   use_answers: bool = False,
-                  answers=["", ""],
-                  save_path: str = "Транспортные задачи",
+                  answers=["niger", "niger"],
                   description: bool = True,
                   student_mark: bool = True):
     """
@@ -23,11 +24,7 @@ def GenerateLatex(questions=["", ""],
     description: 'bool'
         Добавлять описание задачи с этапами решения или нет?
     """
-
-    count = len(questions)
-
-    if len(questions) != len(answers):
-        raise Exception("Количество ответов с вопросами не совпадает")
+    variants_count += 1
 
     doc = Document(document_options="a4paper,12pt", fontenc=None,
                    lmodern=None, textcomp=None, page_numbers=None)
@@ -44,7 +41,7 @@ def GenerateLatex(questions=["", ""],
         doc.append(Command('noindent'))
         doc.append(Command('rule{\\linewidth}{0.4pt}'))
 
-        for i in range(count):
+        for i in range(1, variants_count):
             with doc.create(Subsection(f'Вариант {i}', label=False, numbering=False)):
                 doc.append(Command("\\"))
                 doc.append("Решить уравнение")
@@ -61,20 +58,22 @@ def GenerateLatex(questions=["", ""],
     if use_answers:
         doc.append(Command('newpage'))
         with doc.create(Section('Ответы', label=False, numbering=False)):
-            for i in range(count):
+            for i in range(1, variants_count):
                 with doc.create(Subsection(f'Вариант {i}', label=False, numbering=False)):
                     doc.append(Command("\\"))
                     doc.append(NoEscape("Ответ: " + answers[i]))
 
-    doc.generate_tex(save_path)
-    cmd = ['pdflatex', '-interaction', 'nonstopmode', save_path]
+    doc.generate_tex(save_path + "/Транспортные задачи")
+    cmd = ['pdflatex', '-interaction', 'nonstopmode', f'-output-directory={save_path}',
+           save_path + "/Транспортные задачи.tex"]
     proc = subprocess.Popen(cmd)
     proc.communicate()
-    unlink(f'{save_path}.log')
-    unlink(f'{save_path}.aux')
+    unlink(f'{save_path}/Транспортные задачи.log')
+    unlink(f'{save_path}/Транспортные задачи.aux')
 
 
 if __name__ == "__main__":
-    GenerateLatex(questions=["x_1+x_2=5", "x_3=1"],
+    GenerateLatex(save_path="C:/Users/markt/Desktop/TaskGenerator",
+                  questions=["x_1+x_2=5", "x_3=1"],
                   answers=["(1,0,0,1)", "(1,2,3,4)"],
                   use_answers=True)
