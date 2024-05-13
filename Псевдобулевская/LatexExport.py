@@ -1,7 +1,7 @@
 from pylatex import Document, Section, Subsection, Command, LineBreak, Package, NewLine, NoEscape, Math
 import subprocess
 from os import unlink
-
+import os
 
 def GenerateLatex(save_path: str,
                   variants_count: int = 2,
@@ -9,7 +9,8 @@ def GenerateLatex(save_path: str,
                   use_answers: bool = False,
                   answers=["niger", "niger"],
                   description: bool = True,
-                  student_mark: bool = True):
+                  student_mark: bool = True,
+                  delete_temp: bool = False):
     """
     Функция создания tex и pdf документа для задач.
 
@@ -63,13 +64,18 @@ def GenerateLatex(save_path: str,
                     doc.append(Command("\\"))
                     doc.append(NoEscape("Ответ: " + answers[i]))
 
-    doc.generate_tex(save_path + "/Транспортные задачи")
-    cmd = ['pdflatex', '-interaction', 'nonstopmode', f'-output-directory={save_path}',
-           save_path + "/Транспортные задачи.tex"]
+    doc.generate_tex(os.path.join(save_path, "Транспортные задачи"))
+    cmd = ['pdflatex',
+           '-interaction',
+           'nonstopmode',
+           f'-output-directory={save_path}',
+           os.path.join(save_path, "Транспортные задачи.tex")]
     proc = subprocess.Popen(cmd)
     proc.communicate()
-    unlink(f'{save_path}/Транспортные задачи.log')
-    unlink(f'{save_path}/Транспортные задачи.aux')
+    
+    if delete_temp:
+        unlink(os.path.join(save_path, 'Транспортные задачи.log'))
+        unlink(os.path.join(save_path, 'Транспортные задачи.aux'))
 
 
 if __name__ == "__main__":

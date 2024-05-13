@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 *.tex
 *.pdf
+*.aux
 
 # C extensions
 *.so
