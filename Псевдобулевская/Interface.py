@@ -62,6 +62,9 @@ class PseudoBoolWindow(QWidget):
         self.anwers_checkbox = QCheckBox("Добавить страницу с ответами", self)
         layout.addWidget(self.anwers_checkbox)
 
+        self.temp_checkbox = QCheckBox("Удалить дополнительные файлы", self)
+        layout.addWidget(self.anwers_checkbox)
+
         self.save_button = QPushButton("Сгенерировать", self)
         self.save_button.clicked.connect(self.generate_all)
         layout.addWidget(self.save_button)
@@ -85,6 +88,7 @@ class PseudoBoolWindow(QWidget):
                       variants_count=self.variants_input.value(),
                       student_mark=self.student_mark_checkbox.isChecked(),
                       description=self.description_checkbox.isChecked(),
+                      delete_temp=self.temp_checkbox.isChecked(),
                       # Заменить на реальные вопросы и ответы
                       questions=questions,
                       answers=questions)
