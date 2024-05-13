@@ -63,7 +63,7 @@ class PseudoBoolWindow(QWidget):
         layout.addWidget(self.anwers_checkbox)
 
         self.temp_checkbox = QCheckBox("Удалить дополнительные файлы", self)
-        layout.addWidget(self.anwers_checkbox)
+        layout.addWidget(self.temp_checkbox)
 
         self.save_button = QPushButton("Сгенерировать", self)
         self.save_button.clicked.connect(self.generate_all)
