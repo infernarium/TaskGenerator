@@ -9,7 +9,7 @@ def convert_task(task: Array):
     # вход: [[[-3, -6, 1, 9, 2], [0, 0, 2, 0, 4], 3]]
     ret = ""
     i = 0
-    for Ai, Bi in zip(task[0], task[1]):
+    for Ai, Bi in zip(task[0][0], task[0][1]):
         if Ai > 0:
             ret += '+ ' + str(Ai) + 'x_{' + str(i + 1) + '} '
         if Ai < 0:
@@ -21,8 +21,12 @@ def convert_task(task: Array):
             ret += '- ' + str(Bi)[1] + r'\bar{x}_{' + str(i + 1) + '} '
         i += 1
 
-    ret += "= " + str(task[2])
-    return ret[1:]
+    ret += "= " + str(task[0][2])
+
+    if (task[0][0][0] > 0) or ((task[0][0][0] == 0) and (task[0][0][0] > 0)):
+        return ret[1:]
+    else:
+        return ret
 
 
 def GenerateLatex(save_path: str,
@@ -64,14 +68,13 @@ def GenerateLatex(save_path: str,
         doc.append(Command('noindent'))
         doc.append(Command('rule{\\linewidth}{0.4pt}'))
 
-        for i in range(0, variants_count - 2):
-            with doc.create(Subsection(f'Вариант {i}', label=False, numbering=False)):
+        for i in range(0, variants_count - 1):
+            with doc.create(Subsection(f'Вариант {i + 1}', label=False, numbering=False)):
                 doc.append(Command("\\"))
                 doc.append("Решить уравнение")
                 doc.append(Command("\\"))
 
-                print(questions)
-                doc.append(NoEscape("$" + convert_task(questions[0][i]) + "$"))
+                doc.append(NoEscape("$" + convert_task(questions[i]) + "$"))
 
                 doc.append(Command("\\"))
                 doc.append(Command("\\"))
@@ -87,6 +90,14 @@ def GenerateLatex(save_path: str,
                 with doc.create(Subsection(f'Вариант {i + 1}', label=False, numbering=False)):
                     doc.append(Command("\\"))
                     doc.append(NoEscape("Возможные варианты ответа: \\\\"))
+
+                    for answer in answers[i][0]:
+                        answ_str = '('
+                        for num in answer:
+                            answ_str += str(num) + ', '
+                        answ_str = answ_str[:-2]
+                        answ_str += ') '
+                        doc.append(NoEscape(answ_str))
 
     doc.generate_tex(os.path.join(save_path, "Транспортные задачи"))
     cmd = ['pdflatex',
@@ -111,3 +122,6 @@ if __name__ == "__main__":
                            [[[0, 1, 0, 1, 1], [1, 1, 0, 0, 0], [0, 0, 1, 0, 0]]]],
                   use_answers=True)
     # print(convert_task([[[-3, -6, 1, 9, 2], [0, 0, 2, 0, 4], 3]]))
+
+    # answers = [[[[1, 1, 0, 0, 0], [1, 1, 0, 0, 1], [0, 0, 0, 1, 0]]],
+    #           [[[1, 1, 0, 0, 0], [0, 0, 0, 0, 1], [1, 0, 1, 0, 1], [1, 0, 0, 1, 1]]]]
