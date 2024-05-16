@@ -1,16 +1,38 @@
+from ctypes import Array
 from pylatex import Document, Section, Subsection, Command, LineBreak, Package, NewLine, NoEscape, Math
 import subprocess
 from os import unlink
 import os
 
+
+def convert_task(task: Array):
+    # вход: [[[-3, -6, 1, 9, 2], [0, 0, 2, 0, 4], 3]]
+    ret = ""
+    i = 0
+    for Ai, Bi in zip(task[0], task[1]):
+        if Ai > 0:
+            ret += '+ ' + str(Ai) + 'x_{' + str(i + 1) + '} '
+        if Ai < 0:
+            ret += '- ' + str(Ai)[1] + 'x_{' + str(i + 1) + '} '
+
+        if Bi > 0:
+            ret += '+ ' + str(Bi) + r'\bar{x}_{' + str(i + 1) + '} '
+        if Bi < 0:
+            ret += '- ' + str(Bi)[1] + r'\bar{x}_{' + str(i + 1) + '} '
+        i += 1
+
+    ret += "= " + str(task[2])
+    return ret[1:]
+
+
 def GenerateLatex(save_path: str,
-                  variants_count: int = 2,
+                  variants_count: int,
                   questions=["niger", "niger"],
                   use_answers: bool = False,
                   answers=["niger", "niger"],
                   description: bool = True,
                   student_mark: bool = True,
-                  delete_temp: bool = False):
+                  delete_temp: bool = True):
     """
     Функция создания tex и pdf документа для задач.
 
@@ -42,12 +64,14 @@ def GenerateLatex(save_path: str,
         doc.append(Command('noindent'))
         doc.append(Command('rule{\\linewidth}{0.4pt}'))
 
-        for i in range(1, variants_count):
+        for i in range(0, variants_count - 2):
             with doc.create(Subsection(f'Вариант {i}', label=False, numbering=False)):
                 doc.append(Command("\\"))
                 doc.append("Решить уравнение")
                 doc.append(Command("\\"))
-                doc.append(NoEscape("$" + questions[i] + "$"))
+
+                print(questions)
+                doc.append(NoEscape("$" + convert_task(questions[0][i]) + "$"))
 
                 doc.append(Command("\\"))
                 doc.append(Command("\\"))
@@ -59,10 +83,10 @@ def GenerateLatex(save_path: str,
     if use_answers:
         doc.append(Command('newpage'))
         with doc.create(Section('Ответы', label=False, numbering=False)):
-            for i in range(1, variants_count):
-                with doc.create(Subsection(f'Вариант {i}', label=False, numbering=False)):
+            for i in range(0, variants_count - 1):
+                with doc.create(Subsection(f'Вариант {i + 1}', label=False, numbering=False)):
                     doc.append(Command("\\"))
-                    doc.append(NoEscape("Ответ: " + answers[i]))
+                    doc.append(NoEscape("Возможные варианты ответа: \\\\"))
 
     doc.generate_tex(os.path.join(save_path, "Транспортные задачи"))
     cmd = ['pdflatex',
@@ -72,7 +96,7 @@ def GenerateLatex(save_path: str,
            os.path.join(save_path, "Транспортные задачи.tex")]
     proc = subprocess.Popen(cmd)
     proc.communicate()
-    
+
     if delete_temp:
         unlink(os.path.join(save_path, 'Транспортные задачи.log'))
         unlink(os.path.join(save_path, 'Транспортные задачи.aux'))
@@ -80,6 +104,10 @@ def GenerateLatex(save_path: str,
 
 if __name__ == "__main__":
     GenerateLatex(save_path="C:/Users/markt/Desktop/TaskGenerator",
-                  questions=["x_1+x_2=5", "x_3=1"],
-                  answers=["(1,0,0,1)", "(1,2,3,4)"],
+                  variants_count=2,
+                  questions=[[[[12, -11, -6, 5, 10], [0, -17, 0, 0, 4], -1]],
+                             [[[-5, 7, 6, -6, 8], [0, 0, 0, -1, -3], 2]]],
+                  answers=[[[[0, 1, 0, 0, 1], [1, 0, 0, 0, 0], [0, 1, 1, 1, 1]]],
+                           [[[0, 1, 0, 1, 1], [1, 1, 0, 0, 0], [0, 0, 1, 0, 0]]]],
                   use_answers=True)
+    # print(convert_task([[[-3, -6, 1, 9, 2], [0, 0, 2, 0, 4], 3]]))

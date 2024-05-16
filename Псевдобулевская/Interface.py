@@ -1,6 +1,7 @@
 import sys
 from os.path import exists
 from LatexExport import GenerateLatex
+from Generator import task_generator
 from PyQt6.QtWidgets import (
     QApplication,
     QWidget,
@@ -83,7 +84,8 @@ class PseudoBoolWindow(QWidget):
             QErrorMessage(self).showMessage("Путь к папке указан не верно")
             return
 
-        questions = [str(i) for i in range(self.variants_input.value() + 1)]
+        questions, answers = task_generator(
+            self.variants_input.value(), self.number_input.value())
         # Вставить код создания задач
         GenerateLatex(save_path=self.folder_path_text.text(),
                       use_answers=self.anwers_checkbox.isChecked(),
@@ -93,8 +95,8 @@ class PseudoBoolWindow(QWidget):
                       delete_temp=self.temp_checkbox.isChecked(),
                       # Заменить на реальные вопросы и ответы
                       questions=questions,
-                      answers=questions)
-        
+                      answers=answers)
+
         mbx = QMessageBox()
         mbx.setText("Задачи успешно созданы!")
         mbx.exec()
