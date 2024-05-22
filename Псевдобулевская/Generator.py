@@ -1,8 +1,8 @@
 from ctypes import Array, Union
 import numpy as np
 import random
-
 from TaskGenerator.Псевдобулевская.Solver import solve_equation_problem
+from Solver import solve_equation_problem
 
 
 def generate_random_number(max_value, allow_negative=True):

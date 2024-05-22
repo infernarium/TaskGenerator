@@ -1,5 +1,6 @@
 import sys
 from os.path import exists
+from LatexExport import GenerateLatex
 from PyQt6.QtWidgets import (
     QApplication,
     QWidget,
@@ -16,7 +17,6 @@ from PyQt6.QtWidgets import (
 )
 
 from TaskGenerator.Транспортная.LatexExport import GenerateLatex
-
 
 class TransportationWindow(QWidget):
     def __init__(self):
