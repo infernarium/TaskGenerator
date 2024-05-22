@@ -1,114 +1,153 @@
 import sys
-from os.path import exists
+import random
 from LatexExport import GenerateLatex
-from PyQt6.QtWidgets import (
-    QApplication,
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QLineEdit,
-    QPushButton,
-    QLabel,
-    QFileDialog,
-    QCheckBox,
-    QSpinBox,
-    QErrorMessage,
-    QMessageBox
-)
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QComboBox, QLineEdit, QPushButton, QScrollArea, QHBoxLayout
 
-from TaskGenerator.Транспортная.LatexExport import GenerateLatex
 
-class TransportationWindow(QWidget):
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Генератор транспортных задач")
-        self.initUI()
+        self.setWindowTitle("Поиск оптимального маршрута")
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
 
-    def initUI(self):
-        layout = QVBoxLayout()
+        self.layout = QVBoxLayout(self.central_widget)
 
-        self.variants_label = QLabel("Количество вариантов", self)
-        variants_layout = QHBoxLayout()
-        variants_layout.addWidget(self.variants_label)
-        self.variants_input = QSpinBox(self)
-        self.variants_input.setRange(1, 50)
-        variants_layout.addWidget(self.variants_input)
-        layout.addLayout(variants_layout)
+        # Кнопка случайной генерации
+        self.random_button = QPushButton("Случайная генерация")
+        self.random_button.clicked.connect(self.randomize_values)
+        self.random_button.setFixedSize(200, 30)
+        self.layout.addWidget(self.random_button, alignment=Qt.AlignmentFlag.AlignRight)
 
-        self.sources_label = QLabel("Количество источников", self)
-        sources_layout = QHBoxLayout()
-        sources_layout.addWidget(self.sources_label)
-        self.sources_input = QSpinBox(self)
-        self.sources_input.setRange(2, 20)
-        sources_layout.addWidget(self.sources_input)
-        layout.addLayout(sources_layout)
+        # Поле ввода количества городов
+        self.num_cities_label = QLabel("Количество городов:")
+        self.num_cities_label.setFixedSize(200, 30)
+        self.layout.addWidget(self.num_cities_label)
 
-        self.destinations_label = QLabel("Количество пунктов назначения", self)
-        destinations_layout = QHBoxLayout()
-        destinations_layout.addWidget(self.destinations_label)
-        self.destinations_input = QSpinBox(self)
-        self.destinations_input.setRange(2, 20)
-        destinations_layout.addWidget(self.destinations_input)
-        layout.addLayout(destinations_layout)
+        self.num_cities_entry = QComboBox()
+        self.num_cities_entry.setFixedSize(200, 30)
+        for i in range(2, 11):
+            self.num_cities_entry.addItem(str(i))
+        self.num_cities_entry.currentIndexChanged.connect(self.update_fields)
+        self.layout.addWidget(self.num_cities_entry)
 
-        self.folder_path_text = QLineEdit(self)
-        self.folder_path_text.setPlaceholderText("Путь до папки для сохранения")
+        # Кнопка для добавления полей ввода для дорог между городами
+        self.add_button = QPushButton("Добавить города")
+        self.add_button.clicked.connect(self.add_road_fields)
+        self.add_button.setFixedSize(200, 30)
+        self.layout.addWidget(self.add_button)
 
-        folder_layout = QHBoxLayout()
-        folder_layout.addWidget(self.folder_path_text)
+        # Создание выпадающих списков для выбора наличия дороги между городами и полей ввода времени в пути
+        self.road_comboboxes = []
+        self.time_entries = []
 
-        self.folder_path_button = QPushButton("Выбрать папку", self)
-        self.folder_path_button.clicked.connect(self.get_folder_path)
-        folder_layout.addWidget(self.folder_path_button)
-        layout.addLayout(folder_layout)
+        # Метка для добавления дорог
+        self.roads_label = QLabel("Добавьте дороги:")
+        self.roads_label.setFixedSize(200, 30)
 
-        self.description_checkbox = QCheckBox("Добавить описание задачи", self)
-        layout.addWidget(self.description_checkbox)
+        # Кнопка для нахождения оптимального маршрута
+        self.find_button = QPushButton("Найти оптимальный маршрут")
+        self.find_button.clicked.connect(self.find_optimal_route)
+        self.find_button.setFixedSize(200, 30)
 
-        self.student_mark_checkbox = QCheckBox("Добавить места пометок о сдаче студентами", self)
-        layout.addWidget(self.student_mark_checkbox)
+        # Кнопка для переноса в LaTeX
+        self.latex_button = QPushButton("Перенести в LaTeX")
+        self.latex_button.clicked.connect(self.transfer_to_latex)
+        self.latex_button.setFixedSize(200, 30)
 
-        self.anwers_checkbox = QCheckBox("Добавить страницу с ответами", self)
-        layout.addWidget(self.anwers_checkbox)
+        self.scroll = QScrollArea()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setWidget(QWidget())  # Создаем виджет для скролла
+        self.scroll.widget().setLayout(self.layout)
+        self.setCentralWidget(self.scroll)
 
-        self.temp_checkbox = QCheckBox("Удалить дополнительные файлы", self)
-        layout.addWidget(self.temp_checkbox)
+    def update_fields(self):
+        # Удаление предыдущих полей при изменении количества городов
+        while len(self.road_comboboxes) > 0:
+            self.layout.removeWidget(self.road_comboboxes.pop())
+        while len(self.time_entries) > 0:
+            self.layout.removeWidget(self.time_entries.pop())
 
-        self.save_button = QPushButton("Сгенерировать", self)
-        self.save_button.clicked.connect(self.generate_all)
-        layout.addWidget(self.save_button)
+        # Удаление предыдущих меток "Время в пути:" и "Между городом X и городом Y:"
+        for i in reversed(range(self.layout.count())):
+            item = self.layout.itemAt(i)
+            if isinstance(item.widget(), QLabel) and (item.widget().text().startswith("Между городом") or item.widget().text() == "Время в пути:"):
+                item.widget().deleteLater()
 
-        self.setLayout(layout)
+    def add_road_fields(self):
+        # Добавление полей ввода для дорог между городами
+        num_cities = int(self.num_cities_entry.currentText())
 
-    def get_folder_path(self):
-        folder_path = QFileDialog.getExistingDirectory(self, "Выбрать папку")
-        if folder_path:
-            self.folder_path_text.setText(folder_path)
+        for i in range(num_cities):
+            for j in range(i + 1, num_cities):
+                road_label = QLabel(f"Между городом {i+1} и городом {j+1}:")
+                road_label.setFixedSize(200, 30)
+                self.layout.addWidget(road_label)
 
-    def generate_all(self):
-        if not (exists(self.folder_path_text.text())):
-            QErrorMessage(self).showMessage("Путь к папке указан не верно")
-            return
+                road_combobox = QComboBox()
+                road_combobox.addItems(["Нет", "Да"])
+                road_combobox.setFixedSize(200, 30)
+                self.layout.addWidget(road_combobox)
+                self.road_comboboxes.append(road_combobox)
 
-        questions, answers = transportation_task_generator(
-            self.variants_input.value(), self.sources_input.value(), self.destinations_input.value())
+                time_label = QLabel("Время в пути:")
+                time_label.setFixedSize(200, 30)
+                self.layout.addWidget(time_label)
+
+                time_entry = QLineEdit()
+                time_entry.setFixedSize(200, 30)
+                self.layout.addWidget(time_entry)
+                self.time_entries.append(time_entry)
+
+        self.layout.addWidget(self.roads_label)
+
+        # Группировка кнопок "Найти оптимальный маршрут" и "Перенести в LaTeX"
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.find_button)
+        button_layout.addWidget(self.latex_button)
+        self.layout.addLayout(button_layout)
+
+    def find_optimal_route(self):
+        num_cities = int(self.num_cities_entry.currentText())
+        road_matrix = [[0] * num_cities for _ in range(num_cities)]
+        time_matrix = [[0] * num_cities for _ in range(num_cities)]
+
+        for i in range(num_cities):
+            for j in range(i + 1, num_cities):
+                road_index = i * (num_cities - 1) + j - i - 1
+                road_combobox = self.road_comboboxes[road_index]
+                time_entry = self.time_entries[road_index]
+                if road_combobox.currentText() == "Да":
+                    road_matrix[i][j] = 1
+                    road_matrix[j][i] = 1
+                    time_matrix[i][j] = float(time_entry.text())
+                    time_matrix[j][i] = float(time_entry.text())
+
+        # Выведем матрицы дорог и времени для демонстрации
+        print("Матрица дорог:")
+        for row in road_matrix:
+            print(row)
+        print("Матрица времени в пути:")
+        for row in time_matrix:
+            print(row)
+
+        # Добавим здесь расчет оптимального маршрута на основе наличия дорог между городами и времени в пути
+        pass
+
+    def transfer_to_latex(self):
+        GenerateLatex()
         
-        GenerateLatex(save_path=self.folder_path_text.text(),
-                      use_answers=self.anwers_checkbox.isChecked(),
-                      variants_count=self.variants_input.value(),
-                      student_mark=self.student_mark_checkbox.isChecked(),
-                      description=self.description_checkbox.isChecked(),
-                      delete_temp=self.temp_checkbox.isChecked(),
-                      questions=questions,
-                      answers=answers)
-
-        mbx = QMessageBox()
-        mbx.setText("Задачи успешно созданы!")
-        mbx.exec()
+    def randomize_values(self):
+        num_cities = int(self.num_cities_entry.currentText())
+        for i in range(len(self.road_comboboxes)):
+            self.road_comboboxes[i].setCurrentIndex(random.randint(0, 1))
+            self.time_entries[i].setText(str(random.randint(1, 10)))
 
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = TransportationWindow()
-    window.show()
-    sys.exit(app.exec())
+app = QApplication(sys.argv)
+
+window = MainWindow()
+window.showMaximized()  # Отображаем окно на весь экран
+
+sys.exit(app.exec())
