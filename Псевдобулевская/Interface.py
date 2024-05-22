@@ -17,6 +17,8 @@ from PyQt6.QtWidgets import (
     QMessageBox
 )
 
+from TaskGenerator.Псевдобулевская.Generator import task_generator
+from TaskGenerator.Транспортная.LatexExport import GenerateLatex
 
 class PseudoBoolWindow(QWidget):
     def __init__(self):

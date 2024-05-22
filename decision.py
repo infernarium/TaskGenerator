@@ -4,8 +4,8 @@ from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, \
     QTableWidget, QTableWidgetItem, QLabel, QLineEdit, QMessageBox, QSpinBox, QHBoxLayout
 from PyQt6.QtCore import Qt
 from random import randint
-#from PseudoBullean.Interface import PseudoBoolWindow
-from Interface import TransportationWindow
+from TaskGenerator.Псевдобулевская.Interface import PseudoBoolWindow
+from TaskGenerator.Транспортная.Interface import TransportationWindow
 
 class OptimizationTaskGenerator(QWidget):
     def __init__(self):

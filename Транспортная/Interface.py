@@ -16,6 +16,7 @@ from PyQt6.QtWidgets import (
     QMessageBox
 )
 
+from TaskGenerator.Транспортная.LatexExport import GenerateLatex
 
 class TransportationWindow(QWidget):
     def __init__(self):
