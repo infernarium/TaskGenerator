@@ -15,13 +15,14 @@ from PyQt6.QtWidgets import (
     QMessageBox
 )
 
+from TaskGenerator.Псевдобулевская.Generator import task_generator
 from TaskGenerator.Транспортная.LatexExport import GenerateLatex
 
 
-class TransportationWindow(QWidget):
+class PseudoBoolWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Генератор транспортных задач")
+        self.setWindowTitle("Генератор псевдобулевских уравнений")
         self.initUI()
 
     def initUI(self):
@@ -35,24 +36,17 @@ class TransportationWindow(QWidget):
         variants_layout.addWidget(self.variants_input)
         layout.addLayout(variants_layout)
 
-        self.sources_label = QLabel("Количество источников", self)
-        sources_layout = QHBoxLayout()
-        sources_layout.addWidget(self.sources_label)
-        self.sources_input = QSpinBox(self)
-        self.sources_input.setRange(2, 20)
-        sources_layout.addWidget(self.sources_input)
-        layout.addLayout(sources_layout)
-
-        self.destinations_label = QLabel("Количество пунктов назначения", self)
-        destinations_layout = QHBoxLayout()
-        destinations_layout.addWidget(self.destinations_label)
-        self.destinations_input = QSpinBox(self)
-        self.destinations_input.setRange(2, 20)
-        destinations_layout.addWidget(self.destinations_input)
-        layout.addLayout(destinations_layout)
+        self.number_label = QLabel("Количество булевых переменных", self)
+        parametrs_layout = QHBoxLayout()
+        parametrs_layout.addWidget(self.number_label)
+        self.number_input = QSpinBox(self)
+        self.number_input.setRange(2, 20)
+        parametrs_layout.addWidget(self.number_input)
+        layout.addLayout(parametrs_layout)
 
         self.folder_path_text = QLineEdit(self)
-        self.folder_path_text.setPlaceholderText("Путь до папки для сохранения")
+        self.folder_path_text.setPlaceholderText(
+            "Путь до папки для сохранения")
 
         folder_layout = QHBoxLayout()
         folder_layout.addWidget(self.folder_path_text)
@@ -65,7 +59,8 @@ class TransportationWindow(QWidget):
         self.description_checkbox = QCheckBox("Добавить описание задачи", self)
         layout.addWidget(self.description_checkbox)
 
-        self.student_mark_checkbox = QCheckBox("Добавить места пометок о сдаче студентами", self)
+        self.student_mark_checkbox = QCheckBox(
+            "Добавить места пометок о сдаче студентами", self)
         layout.addWidget(self.student_mark_checkbox)
 
         self.anwers_checkbox = QCheckBox("Добавить страницу с ответами", self)
@@ -90,15 +85,16 @@ class TransportationWindow(QWidget):
             QErrorMessage(self).showMessage("Путь к папке указан не верно")
             return
 
-        questions, answers = transportation_task_generator(
-            self.variants_input.value(), self.sources_input.value(), self.destinations_input.value())
-        
+        questions, answers = task_generator(
+            self.variants_input.value(), self.number_input.value())
+        # Вставить код создания задач
         GenerateLatex(save_path=self.folder_path_text.text(),
                       use_answers=self.anwers_checkbox.isChecked(),
                       variants_count=self.variants_input.value(),
                       student_mark=self.student_mark_checkbox.isChecked(),
                       description=self.description_checkbox.isChecked(),
                       delete_temp=self.temp_checkbox.isChecked(),
+                      # Заменить на реальные вопросы и ответы
                       questions=questions,
                       answers=answers)
 
@@ -109,6 +105,6 @@ class TransportationWindow(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = TransportationWindow()
+    window = PseudoBoolWindow()
     window.show()
     sys.exit(app.exec())
