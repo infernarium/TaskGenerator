@@ -1,11 +1,9 @@
-import random
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, \
-    QTableWidget, QTableWidgetItem, QLabel, QLineEdit, QMessageBox, QSpinBox, QHBoxLayout
+from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout
 from PyQt6.QtCore import Qt
-from random import randint
 from TaskGenerator.Псевдобулевская.Interface import PseudoBoolWindow
 from TaskGenerator.Транспортная.Interface import TransportationWindow
+
 
 class OptimizationTaskGenerator(QWidget):
     def __init__(self):
@@ -26,7 +24,8 @@ class OptimizationTaskGenerator(QWidget):
 
         btn_transport_problem = QPushButton("Транспортная задача")
         btn_transport_problem.setFixedSize(300, 50)
-        btn_transport_problem.clicked.connect(self.open_transport_problem_window)
+        btn_transport_problem.clicked.connect(
+            self.open_transport_problem_window)
         layout.addWidget(btn_transport_problem)
 
         self.setLayout(layout)
@@ -41,11 +40,13 @@ class OptimizationTaskGenerator(QWidget):
         transport_problem_window.show()
         self.task_windows.append(transport_problem_window)
 
+
 def main():
     app = QApplication(sys.argv)
     window = OptimizationTaskGenerator()
     window.show()
     sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     main()

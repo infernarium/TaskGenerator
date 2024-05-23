@@ -1,7 +1,7 @@
 import sys
 from os.path import exists
-from LatexExport import GenerateLatex
-from Generator import task_generator
+from TaskGenerator.Псевдобулевская.Generator import task_generator
+from TaskGenerator.Транспортная.LatexExport import GenerateLatex
 from PyQt6.QtWidgets import (
     QApplication,
     QWidget,
@@ -16,9 +16,6 @@ from PyQt6.QtWidgets import (
     QErrorMessage,
     QMessageBox
 )
-
-from TaskGenerator.Псевдобулевская.Generator import task_generator
-from TaskGenerator.Транспортная.LatexExport import GenerateLatex
 
 class PseudoBoolWindow(QWidget):
     def __init__(self):
