@@ -1,5 +1,5 @@
-import numpy as np
 import cvxpy as cp
+import numpy as np
 
 
 def is_integer_solution(solution):

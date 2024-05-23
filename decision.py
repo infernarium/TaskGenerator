@@ -2,7 +2,8 @@ import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout
 from PyQt6.QtCore import Qt
 from TaskGenerator.Псевдобулевская.Interface import PseudoBoolWindow
-from TaskGenerator.Транспортная.Interface import TransportationWindow
+from TaskGenerator.Транспортная.Interface import MainWindow
+
 
 
 class OptimizationTaskGenerator(QWidget):
@@ -36,7 +37,7 @@ class OptimizationTaskGenerator(QWidget):
         self.task_windows.append(pseudo_boolean_window)
 
     def open_transport_problem_window(self):
-        transport_problem_window = TransportationWindow()
+        transport_problem_window = MainWindow()
         transport_problem_window.show()
         self.task_windows.append(transport_problem_window)
 

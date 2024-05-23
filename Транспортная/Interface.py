@@ -1,9 +1,8 @@
 import sys
 import random
-from LatexExport import GenerateLatex
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QComboBox, QLineEdit, QPushButton, QScrollArea, QHBoxLayout
-
+from TaskGenerator.Транспортная.LatexExport import GenerateLatex
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -136,7 +135,26 @@ class MainWindow(QMainWindow):
         pass
 
     def transfer_to_latex(self):
-        GenerateLatex()
+        num_cities = int(self.num_cities_entry.currentText())
+        road_matrix = [[0] * num_cities for _ in range(num_cities)]
+        time_matrix = [[0] * num_cities for _ in range(num_cities)]
+
+        road_index = 0  # Индекс для доступа к комбобоксам и полям ввода времени
+        for i in range(num_cities):
+            for j in range(i + 1, num_cities):
+                if road_index < len(self.road_comboboxes):
+                    road_combobox = self.road_comboboxes[road_index]
+                    time_entry = self.time_entries[road_index]
+                    if road_combobox.currentText() == "Да":
+                        road_matrix[i][j] = 1
+                        road_matrix[j][i] = 1
+                        time_matrix[i][j] = float(time_entry.text())
+                        time_matrix[j][i] = float(time_entry.text())
+                    road_index += 1  # Увеличиваем индекс после использования комбобоксов и полей ввода времени
+
+        latex_generator = GenerateLatex(road_matrix, time_matrix)
+        latex_filename = "transportation_data.tex"
+        latex_generator.export_to_latex(latex_filename)
         
     def randomize_values(self):
         num_cities = int(self.num_cities_entry.currentText())
@@ -145,9 +163,8 @@ class MainWindow(QMainWindow):
             self.time_entries[i].setText(str(random.randint(1, 10)))
 
 
-app = QApplication(sys.argv)
-
-window = MainWindow()
-window.showMaximized()  # Отображаем окно на весь экран
-
-sys.exit(app.exec())
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.showMaximized()
+    sys.exit(app.exec())
