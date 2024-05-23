@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLa
 from TaskGenerator.Транспортная.LatexExport import GenerateLatex
 
 
-class TransportationWindow(QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Поиск оптимального маршрута")
@@ -166,6 +166,6 @@ class TransportationWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = TransportationWindow()
+    window = MainWindow()
     window.showMaximized()  # Display the window in full screen
     sys.exit(app.exec())
