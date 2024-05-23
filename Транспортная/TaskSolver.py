@@ -1,6 +1,7 @@
 import cvxpy as cp
 import numpy as np
 
+
 def is_integer_solution(solution):
     return np.all(np.equal(np.mod(solution, 1), 0))
 

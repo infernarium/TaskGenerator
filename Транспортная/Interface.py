@@ -4,7 +4,6 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QComboBox, QLineEdit, QPushButton, QScrollArea, QHBoxLayout
 from TaskGenerator.Транспортная.LatexExport import GenerateLatex
 
-
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -167,5 +166,5 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
-    window.showMaximized()  # Display the window in full screen
+    window.showMaximized()
     sys.exit(app.exec())

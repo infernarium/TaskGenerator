@@ -5,6 +5,7 @@ from TaskGenerator.Псевдобулевская.Interface import PseudoBoolWin
 from TaskGenerator.Транспортная.Interface import MainWindow
 
 
+
 class OptimizationTaskGenerator(QWidget):
     def __init__(self):
         super().__init__()
