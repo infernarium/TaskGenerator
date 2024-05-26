@@ -1,5 +1,6 @@
 import numpy as np
 import TaskSolver as Solver
+import TransLatex as Latex
 
 
 class ParameterRandomizer:
@@ -119,7 +120,18 @@ class ParameterRandomizer:
 if __name__ == "__main__":
     result = None
     test = ParameterRandomizer()
-    while result is None:
-        data = test.generate_task(3, 4)
-        result = Solver.solve_transport_problem(data[2], data[1], data[0])
-    print(result)
+    data = []
+    task_list = []
+    answer_list = []
+    tr_latex = Latex.LatexTransport()
+    for i in range(3):
+        while result is None:
+            data = test.generate_task(4, 5)
+            result = Solver.solve_transport_problem(data[2], data[1], data[0])
+        task_list.append(tr_latex.generate_conditions(data))
+        answer_list.append(tr_latex.generate_answer(result))
+    print(tr_latex.generate_file(task_list, answer_list))
+
+
+
+

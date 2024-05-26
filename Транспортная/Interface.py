@@ -1,8 +1,10 @@
 import sys
 import random
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QComboBox, QLineEdit, QPushButton, QScrollArea, QHBoxLayout
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, \
+    QLabel, QComboBox, QLineEdit, QPushButton, QScrollArea, QHBoxLayout
 from TaskGenerator.Транспортная.LatexExport import GenerateLatex
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -17,7 +19,8 @@ class MainWindow(QMainWindow):
         self.random_button = QPushButton("Случайная генерация")
         self.random_button.clicked.connect(self.randomize_values)
         self.random_button.setFixedSize(200, 30)
-        self.layout.addWidget(self.random_button, alignment=Qt.AlignmentFlag.AlignRight)
+        self.layout.addWidget(self.random_button,
+                              alignment=Qt.AlignmentFlag.AlignRight)
 
         # Поле ввода количества городов
         self.num_cities_label = QLabel("Количество городов:")
@@ -71,7 +74,9 @@ class MainWindow(QMainWindow):
         # Удаление предыдущих меток "Время в пути:" и "Между городом X и городом Y:"
         for i in reversed(range(self.layout.count())):
             item = self.layout.itemAt(i)
-            if isinstance(item.widget(), QLabel) and (item.widget().text().startswith("Между городом") or item.widget().text() == "Время в пути:"):
+            if isinstance(item.widget(), QLabel) and (
+                    item.widget().text().startswith(
+                            "Между городом") or item.widget().text() == "Время в пути:"):
                 item.widget().deleteLater()
 
     def add_road_fields(self):
@@ -80,7 +85,8 @@ class MainWindow(QMainWindow):
 
         for i in range(num_cities):
             for j in range(i + 1, num_cities):
-                road_label = QLabel(f"Между городом {i+1} и городом {j+1}:")
+                road_label = QLabel(
+                    f"Между городом {i + 1} и городом {j + 1}:")
                 road_label.setFixedSize(200, 30)
                 self.layout.addWidget(road_label)
 
@@ -155,7 +161,7 @@ class MainWindow(QMainWindow):
         latex_generator = GenerateLatex(road_matrix, time_matrix)
         latex_filename = "transportation_data.tex"
         latex_generator.export_to_latex(latex_filename)
-        
+
     def randomize_values(self):
         num_cities = int(self.num_cities_entry.currentText())
         for i in range(len(self.road_comboboxes)):
