@@ -1,6 +1,8 @@
 import numpy as np
 import TaskSolver as Solver
 import TransLatex as Latex
+import os
+import subprocess
 
 
 class ParameterRandomizer:
@@ -117,21 +119,61 @@ class ParameterRandomizer:
         )
 
 
-if __name__ == "__main__":
+def generate_tex_file(number_students, number_departure, number_destinations,
+                      link):
     result = None
+    tex_path = os.path.expanduser(link)
+    pdf_path = tex_path.replace(".tex", ".pdf")
     test = ParameterRandomizer()
     data = []
     task_list = []
     answer_list = []
     tr_latex = Latex.LatexTransport()
-    for i in range(3):
+    for i in range(number_students):
         while result is None:
-            data = test.generate_task(4, 5)
+            data = test.generate_task(number_departure,
+                                      number_destinations)
             result = Solver.solve_transport_problem(data[2], data[1], data[0])
         task_list.append(tr_latex.generate_conditions(data))
         answer_list.append(tr_latex.generate_answer(result))
-    print(tr_latex.generate_file(task_list, answer_list))
+    tex_file = tr_latex.generate_file(task_list, answer_list)
+    try:
+        with open(tex_path, "w", encoding="utf-8") as f:
+            f.write(tex_file)
+        print(f"LaTeX файл успешно создан: {tex_path}")
+    except IOError as e:
+        print(f"Ошибка записи LaTeX файла: {e}")
+        return
+
+    try:
+        result = subprocess.run(
+            ["pdflatex", "-interaction=nonstopmode", tex_path],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        print(f"LaTeX файл успешно скомпилирован в PDF: {pdf_path}")
+        print(f"stdout: {result.stdout.decode()}")
+        print(f"stderr: {result.stderr.decode()}")
+    except subprocess.CalledProcessError as e:
+        print(f"Ошибка при компиляции LaTeX: {e.stderr.decode()}")
+        print(f"stdout: {e.stdout.decode()}")
+    except FileNotFoundError:
+        print("Ошибка: pdflatex не найден. Убедитесь, что LaTeX установлен и доступен в PATH.")
+    except Exception as e:
+        print(f"Непредвиденная ошибка: {str(e)}")
+
+    for ext in [".aux", ".log", ".out"]:
+        temp_file = tex_path.replace(".tex", ext)
+        if os.path.exists(temp_file):
+            try:
+                os.remove(temp_file)
+                print(f"Удален временный файл: {temp_file}")
+            except Exception as e:
+                print(f"Не удалось удалить временный файл {temp_file}: {str(e)}")
 
 
-
-
+if __name__ == "__main__":
+    path_file = "C:\\Users\\reino\\python\\TaskGenerator\\Транспортная\\file_name"
+    path = f"{path_file}.tex"
+    generate_tex_file(5, 4, 5, path)

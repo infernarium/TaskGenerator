@@ -45,8 +45,7 @@ class LatexTransport:
         else:
             latex_matrix += fr"""
 \end{{tabular}}
-\end{{table}} \par\
-\centering
+\end{{table}}
 Максимальная прибыль : {max_sum}
         """
         return latex_matrix
@@ -69,7 +68,7 @@ class LatexTransport:
                 hat += f"$B_{i + 1}$ &"
             layout = (
                 fr"""
-\begin{{table}}[h!] 
+\begin{{table}}[H] 
 \centering 
 \begin{{tabular}}{{{table_frmt}}}
 \hline
@@ -85,7 +84,7 @@ class LatexTransport:
                 hat += f"& $B_{i + 1}$"
             layout = (
                 fr"""
-\begin{{table}}[h!] 
+\begin{{table}}[H] 
 \begin{{tabular}}{{{table_frmt}}}
 \hline
 \multicolumn{{3}}{{|c|}}{{\textbf{{Пункты}}}} & \multicolumn{{{n}}}{{c|}}{{\textbf{{Пункты назначения}}}} \\ \cline{{4-{3 + n}}}
@@ -103,6 +102,7 @@ class LatexTransport:
 \usepackage[utf8]{inputenc}
 \usepackage[english, russian]{babel}
 \usepackage{array}
+\usepackage{float}
 \usepackage{booktabs}
 \begin{document}
 \section*{Транспортная задача}
